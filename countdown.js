@@ -1,20 +1,37 @@
-function getSecondsTillSchnitties() {
-    setInterval(function() {
-        let tues = new Date();
-        let today = new Date();
-        let day = today.getDay();
-        let diff = day - today.getDay();
-        tues.setDate(tues.getDate() + diff);
-        tues.setHours(13);
-        tues.setMinutes(15);
-        tues.setSeconds(0);
-        tues.setMilliseconds(0);
+import { add, formatDuration, isTuesday, nextTuesday, set, isAfter, isBefore, intervalToDuration } from "https://cdn.skypack.dev/date-fns";
 
-        if (tues < today) {
-            tues.setDate(tues.getDate() + 7);
-        }
+const element = document.createElement("h1");
 
-        let seconds = document.getElementById("seconds");
-        seconds.textContent = Math.floor((tues - today)/1000);
-    }, 1000);
-}
+setInterval(() => {
+    const now = new Date();
+
+    // Special case for Tuesday after 2:15PM
+    const isBeforeTwoFifteen = isBefore(
+        now,
+        set(now, {
+            hours: 14,
+            minutes: 15,
+            seconds: 0,
+        })
+    );
+
+    let schnittyDay = isTuesday(now) && isBeforeTwoFifteen ? now : nextTuesday(now)
+
+    const schnittyTime = set(schnittyDay, {
+        hours: 13,
+        minutes: 15,
+        seconds: 0,
+    });
+
+    const endSchnittyTime = add(schnittyTime, { hours: 1 });
+
+    const schnitties = isAfter(now, schnittyTime) && isBefore(now, endSchnittyTime) ? 
+        "Bet" : 
+        formatDuration(
+            intervalToDuration({ start: now, end: schnittyTime})
+        );
+    
+    element.innerHTML = schnitties;
+}, 1000);
+
+document.body.appendChild(element);
